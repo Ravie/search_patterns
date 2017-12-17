@@ -323,8 +323,3 @@ int manhattan_tourist(vector<vector<int>>&edge_weight, vector<vector<int>>&south
 	}
 	return edge_weight[height][width];
 }
-
-int max(int i, int j)
-{
-	return (i > j) ? i : j;
-}
