@@ -11,8 +11,9 @@ string frequent_patterns(string, int);
 void homework1(ifstream &, ofstream &);
 void homework4(ifstream &, ofstream &);
 int coins_exchange(int, vector<int> &);
-int manhattan_tourist(vector <vector<int> >&, vector <vector<int> >&, vector <vector<int> >&, int, int);
-int max(int, int);
+int manhattan_tourist(vector<vector<int>> &, vector<vector<int>> &, vector<vector<int>> &, int, int);
+void LCS(string &, string &, vector<vector<int>> &, vector<vector<char>> &);
+void printLCS(vector<vector<char>> &, string, string &, int, int);
 
 int main()
 {
@@ -243,12 +244,15 @@ void homework4(ifstream &input_file, ofstream &output_file)
 	break;
 	case 3:
 	{
+		string v, w, o = "";
 
-	}
-	break;
-	case 4:
-	{
-
+		getline(input_file, v);
+		getline(input_file, w);
+		vector<vector<int>> s(v.size() + 1, vector<int>(w.size() + 1));
+		vector<vector<char>> b(v.size() + 1, vector<char>(w.size() + 1));
+		LCS(v, w, s, b);
+		printLCS(b, v, o, v.size(), w.size());
+		output_file << o;
 	}
 	break;
 	default:
@@ -322,4 +326,70 @@ int manhattan_tourist(vector<vector<int>>&edge_weight, vector<vector<int>>&south
 		cout << endl;
 	}
 	return edge_weight[height][width];
+}
+
+void LCS(string &v, string &w, vector<vector<int>> &s, vector<vector<char>> &b)
+{
+	int n = v.size();
+	int m = w.size();
+	for (int i = 0; i <= n; i++)
+	{
+		s[i][0] = 0;
+	}
+	for (int j = 0; j <= m; j++)
+	{
+		s[0][j] = 0;
+	}
+	for (int i = 1; i <= n; i++)
+	{
+		for (int j = 1; j <= m; j++)
+		{
+			if (v[i - 1] == w[j - 1])
+			{
+				s[i][j] = max(max(s[i - 1][j], s[i][j - 1]), s[i - 1][j - 1] + 1);
+			}
+			else
+			{
+				s[i][j] = max(s[i - 1][j], s[i][j - 1]);
+			}
+			if (s[i][j] == s[i - 1][j])
+			{
+				b[i][j] = '^';
+			}
+			else if (s[i][j] == s[i][j - 1])
+			{
+				b[i][j] = '<';
+			}
+			else if (s[i][j] == s[i - 1][j - 1] + 1)
+			{
+				b[i][j] = '\\';
+			}
+			//cout << b[i][j] << " ";
+		}
+		//cout << endl;
+	}
+}
+
+void printLCS(vector<vector<char>> &b, string v, string &o, int i, int j)
+{
+	if (i == 0 || j == 0)
+	{
+		return;
+	}
+	if (b[i][j] == '\\')
+	{
+		printLCS(b, v, o, i - 1, j - 1);
+		o += v[i - 1];
+	}
+	else
+	{
+		if (b[i][j] == '^')
+		{
+			printLCS(b, v, o, i - 1, j);
+		}
+		else
+		{
+			printLCS(b, v, o, i, j - 1);
+		}
+	}
 }
