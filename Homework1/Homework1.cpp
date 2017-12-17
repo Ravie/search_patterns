@@ -11,6 +11,8 @@ string frequent_patterns(string, int);
 void homework1(ifstream &, ofstream &);
 void homework4(ifstream &, ofstream &);
 int coins_exchange(int, vector<int> &);
+int manhattan_tourist(vector <vector<int> >&, vector <vector<int> >&, vector <vector<int> >&, int, int);
+int max(int, int);
 
 int main()
 {
@@ -196,7 +198,47 @@ void homework4(ifstream &input_file, ofstream &output_file)
 	break;
 	case 2:
 	{
+		// разбор размерности сетки
+		string inp_str1, n, m, temp;
+		int height, width, max_path;
 
+		getline(input_file, inp_str1);
+		istringstream iss(inp_str1);
+		getline(iss, n, ' ');
+		getline(iss, m);
+		height = stoi(n);
+		width = stoi(m);
+		// разбор массивов
+		vector<string> array1, array2;
+		vector<vector<int>> south_weights(height, vector<int>(width + 1));
+		vector<vector<int>> east_weights(height + 1, vector<int>(width));
+		// разбор первого массива
+		for (int i = 0; i < height; i++)
+		{
+			getline(input_file, inp_str1);
+			istringstream iss(inp_str1);
+			for (int j = 0; j < width + 1; j++)
+			{
+				getline(iss, temp, ' ');
+				south_weights[i][j] = stoi(temp);
+			}
+		}
+		// считывание разделителя
+		getline(input_file, inp_str1);
+		// разбор второго массива
+		for (int i = 0; i < height + 1; i++)
+		{
+			getline(input_file, inp_str1);
+			istringstream iss(inp_str1);
+			for (int j = 0; j < width; j++)
+			{
+				getline(iss, temp, ' ');
+				east_weights[i][j] = stoi(temp);
+			}
+		}
+		vector<vector<int>> edge_weight(height + 1, vector<int>(width + 1));
+		max_path = manhattan_tourist(edge_weight, south_weights, east_weights, height, width);
+		output_file << max_path;
 	}
 	break;
 	case 3:
@@ -253,4 +295,36 @@ int coins_exchange(int sum, vector<int> &denom)
 		}
 	}
 	return bestNumCoins[sum];
+}
+
+int manhattan_tourist(vector<vector<int>>&edge_weight, vector<vector<int>>&south_weights, vector<vector<int>>&east_weights, int height, int width)
+{
+	edge_weight[0][0] = 0;
+	for (int i = 1; i <= height; i++)
+	{
+		edge_weight[i][0] = edge_weight[i - 1][0] + south_weights[i - 1][0];
+		cout << edge_weight[i][0] << endl;
+	}
+	cout << endl;
+	for (int j = 1; j <= width; j++)
+	{
+		edge_weight[0][j] = edge_weight[0][j - 1] + east_weights[0][j - 1]; 
+		cout << edge_weight[0][j] << " ";
+	}
+	cout << endl;
+	for (int i = 1; i <= height; i++)
+	{
+		for (int j = 1; j <= width; j++)
+		{
+			edge_weight[i][j] = max(edge_weight[i - 1][j] + south_weights[i - 1][j], edge_weight[i][j - 1] + east_weights[i][j - 1]);
+			cout << edge_weight[i][j] << " ";
+		}
+		cout << endl;
+	}
+	return edge_weight[height][width];
+}
+
+int max(int i, int j)
+{
+	return (i > j) ? i : j;
 }
