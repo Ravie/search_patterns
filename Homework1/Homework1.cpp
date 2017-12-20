@@ -483,10 +483,12 @@ void build_dir_sc_tables(const vector<char> &acid, const vector<vector<int>> &su
 	for (int i = 0; i <= n; i++)
 	{
 		score_table[i][0] = -5 * i;
+		direction_table[i][0] = '^';
 	}
 	for (int j = 0; j <= m; j++)
 	{
 		score_table[0][j] = -5 * j;
+		direction_table[0][j] = '<';
 	}
 	for (int i = 1; i <= n; i++)
 	{
@@ -497,11 +499,11 @@ void build_dir_sc_tables(const vector<char> &acid, const vector<vector<int>> &su
 			{
 				direction_table[i][j] = '^';
 			}
-			if (score_table[i][j] == score_table[i][j - 1] - 5)
+			else if (score_table[i][j] == score_table[i][j - 1] - 5)
 			{
 				direction_table[i][j] = '<';
 			}
-			if (score_table[i][j] == score_table[i - 1][j - 1] + score(acid, substitution_matrix, v[i - 1], w[j - 1]))
+			else if (score_table[i][j] == score_table[i - 1][j - 1] + score(acid, substitution_matrix, v[i - 1], w[j - 1]))
 			{
 				direction_table[i][j] = '\\';
 			}
@@ -530,7 +532,7 @@ int score(const vector<char> &acid, const vector<vector<int>> &substitution_matr
 
 void print_alignment(const vector<vector<char>> &direction_table, const string v_in, const string w_in, const int i, const int j, string &v_out, string &w_out)
 {
-	if (i == 0 || j == 0)
+	if (i == 0 && j == 0)
 	{
 		return;
 	}
