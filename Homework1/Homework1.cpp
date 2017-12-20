@@ -14,6 +14,10 @@ int coins_exchange(int, vector<int> &);
 int manhattan_tourist(vector<vector<int>> &, vector<vector<int>> &, vector<vector<int>> &, int, int);
 void LCS(string &, string &, vector<vector<int>> &, vector<vector<char>> &);
 void printLCS(vector<vector<char>> &, string, string &, int, int);
+void homework5(ifstream &, ofstream &);
+void build_dir_sc_tables(const vector<char> &, const vector<vector<int>> &, string &, string &, vector<vector<int>> &, vector<vector<char>> &);
+int score(const vector<char> &, const vector<vector<int>> &, const char, const char);
+void print_alignment(const vector<vector<char>> &, const string, const string, const int, const int, string &, string &);
 
 int main()
 {
@@ -35,6 +39,11 @@ int main()
 	case 4:
 	{
 		homework4(input_file, output_file);
+	}
+	break;
+	case 5:
+	{
+		homework5(input_file, output_file);
 	}
 	break;
 	default:
@@ -391,5 +400,156 @@ void printLCS(vector<vector<char>> &b, string v, string &o, int i, int j)
 		{
 			printLCS(b, v, o, i, j - 1);
 		}
+	}
+}
+
+void homework5(ifstream &input_file, ofstream &output_file)
+{
+	int tasknum;
+	cout << "Choose task number: ";
+	cin >> tasknum;
+	switch (tasknum)
+	{
+	case 1:
+	{
+		string inp_str1, inp_str2, inp_str3, temp, out_str1, out_str2;
+		// разбираем 2 последовательности аминокислот
+		getline(input_file, inp_str1);
+		getline(input_file, inp_str2);
+		// выделяем место под таблицы весов и направлений
+		vector<vector<int>> score_table(inp_str1.size() + 1, vector<int>(inp_str2.size() + 1));
+		vector<vector<char>> direction_table(inp_str1.size() + 1, vector<char>(inp_str2.size() + 1));
+		// разбираем таблицу BLOSUM62
+		ifstream blosum_file;
+		blosum_file.open("blosum62.txt");
+		// считываем последовательность аминокислот в таблице
+		vector<char> acids;
+		getline(blosum_file, inp_str3);
+		for (int i = 0; i < inp_str3.size(); i++)
+		{
+			if (inp_str3[i] != ' ')
+			{
+				acids.push_back(inp_str3[i]);
+			}
+		}
+		// считываем саму таблицу
+		vector<vector<int>> blosum62(acids.size() + 1, vector<int>(acids.size() + 1));
+		for (int i = 1; i <= acids.size(); i++)
+		{
+			getline(blosum_file, inp_str3);
+			istringstream iss(inp_str3);
+			for (int j = 1; j <= acids.size(); j++)
+			{
+				getline(iss, temp, ' ');
+				while (temp == "")
+				{
+					getline(iss, temp, ' ');
+				}
+				blosum62[i][j] = stoi(temp);
+			}
+		}
+		blosum_file.close();
+		// строим таблицы весов и направлений
+		build_dir_sc_tables(acids, blosum62, inp_str1, inp_str2, score_table, direction_table);
+		// делаем выравнивание обеих последовательностей
+		print_alignment(direction_table, inp_str1, inp_str2, inp_str1.size(), inp_str2.size(), out_str1, out_str2);
+		output_file << score_table[inp_str1.size()][inp_str2.size()] << endl << out_str1 << endl << out_str2;
+		for (int i = 0; i <= inp_str1.size(); i++)
+		{
+			for (int j = 0; j <= inp_str2.size(); j++)
+			{
+				cout << score_table[i][j] << " ";
+			}
+			cout << endl;
+		}
+	}
+	break;
+	case 2:
+	{
+
+	}
+	break;
+	default:
+	{
+		cout << "Incorrect number";
+	}
+	}
+}
+
+void build_dir_sc_tables(const vector<char> &acid, const vector<vector<int>> &substitution_matrix, string &v, string &w, vector<vector<int>> &score_table, vector<vector<char>> &direction_table)
+{
+	int n = v.size();
+	int m = w.size();
+	for (int i = 0; i <= n; i++)
+	{
+		score_table[i][0] = -5 * i;
+	}
+	for (int j = 0; j <= m; j++)
+	{
+		score_table[0][j] = -5 * j;
+	}
+	for (int i = 1; i <= n; i++)
+	{
+		for (int j = 1; j <= m; j++)
+		{
+			score_table[i][j] = max(max(score_table[i - 1][j] - 5, score_table[i][j - 1] - 5), score_table[i - 1][j - 1] + score(acid, substitution_matrix, v[i - 1], w[j - 1]));
+			if (score_table[i][j] == score_table[i - 1][j] - 5)
+			{
+				direction_table[i][j] = '^';
+			}
+			if (score_table[i][j] == score_table[i][j - 1] - 5)
+			{
+				direction_table[i][j] = '<';
+			}
+			if (score_table[i][j] == score_table[i - 1][j - 1] + score(acid, substitution_matrix, v[i - 1], w[j - 1]))
+			{
+				direction_table[i][j] = '\\';
+			}
+			cout << direction_table[i][j] << " ";
+		}
+		cout << endl;
+	}
+}
+
+int score(const vector<char> &acid, const vector<vector<int>> &substitution_matrix, const char v, const char w)
+{
+	int x = 0, y = 0;
+	for (int i = 0; i < acid.size(); i++)
+	{
+		if (v == acid[i])
+		{
+			x = i;
+		}
+		if (w == acid[i])
+		{
+			y = i;
+		}
+	}
+	return substitution_matrix[x + 1][y + 1];
+}
+
+void print_alignment(const vector<vector<char>> &direction_table, const string v_in, const string w_in, const int i, const int j, string &v_out, string &w_out)
+{
+	if (i == 0 || j == 0)
+	{
+		return;
+	}
+	if (direction_table[i][j] == '\\')
+	{
+		print_alignment(direction_table, v_in, w_in, i - 1, j - 1, v_out, w_out);
+		v_out += v_in[i - 1];
+		w_out += w_in[j - 1];
+	}
+	else if (direction_table[i][j] == '^')
+	{
+		print_alignment(direction_table, v_in, w_in, i - 1, j, v_out, w_out);
+		v_out += v_in[i - 1];
+		w_out += "-";
+	}
+	else if (direction_table[i][j] == '<')
+	{
+		print_alignment(direction_table, v_in, w_in, i, j - 1, v_out, w_out);
+		v_out += "-";
+		w_out += w_in[j - 1];
 	}
 }
