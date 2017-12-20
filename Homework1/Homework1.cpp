@@ -18,6 +18,7 @@ void homework5(ifstream &, ofstream &);
 void build_dir_sc_tables(const vector<char> &, const vector<vector<int>> &, const string &, const string &, const string &, vector<vector<int>> &, vector<vector<char>> &);
 int score(const vector<char> &, const vector<vector<int>> &, const char, const char);
 void print_alignment(const vector<vector<char>> &, const string, const string, const int, const int, string &, string &);
+void homework6(ifstream &, ofstream &);
 
 int main()
 {
@@ -44,6 +45,11 @@ int main()
 	case 5:
 	{
 		homework5(input_file, output_file);
+	}
+	break;
+	case 6:
+	{
+		homework6(input_file, output_file);
 	}
 	break;
 	default:
@@ -601,5 +607,45 @@ void print_alignment(const vector<vector<char>> &direction_table, const string v
 		print_alignment(direction_table, v_in, w_in, i, j - 1, v_out, w_out);
 		v_out += "-";
 		w_out += w_in[j - 1];
+	}
+}
+
+void homework6(ifstream &input_file, ofstream &output_file)
+{
+	int tasknum;
+	cout << "Choose task number: ";
+	cin >> tasknum;
+	switch (tasknum)
+	{
+	case 1:
+	{
+		string inp_str1, inp_str2;
+
+		int k;
+		getline(input_file, inp_str1);
+		k = stoi(inp_str1);
+
+		getline(input_file, inp_str2);
+
+		for (int i = 0; i <= inp_str2.size() - k; i++)
+		{
+			output_file << inp_str2.substr(i, k) << endl;
+		}
+	}
+	break;
+	case 2:
+	{
+
+	}
+	break;
+	case 3:
+	{
+
+	}
+	break;
+	default:
+	{
+		cout << "Incorrect number";
+	}
 	}
 }
