@@ -15,7 +15,7 @@ int manhattan_tourist(vector<vector<int>> &, vector<vector<int>> &, vector<vecto
 void LCS(string &, string &, vector<vector<int>> &, vector<vector<char>> &);
 void printLCS(vector<vector<char>> &, string, string &, int, int);
 void homework5(ifstream &, ofstream &);
-void build_dir_sc_tables(const vector<char> &, const vector<vector<int>> &, string &, string &, vector<vector<int>> &, vector<vector<char>> &);
+void build_dir_sc_tables(const vector<char> &, const vector<vector<int>> &, const string &, const string &, const string &, vector<vector<int>> &, vector<vector<char>> &);
 int score(const vector<char> &, const vector<vector<int>> &, const char, const char);
 void print_alignment(const vector<vector<char>> &, const string, const string, const int, const int, string &, string &);
 
@@ -412,7 +412,7 @@ void homework5(ifstream &input_file, ofstream &output_file)
 	{
 	case 1:
 	{
-		string inp_str1, inp_str2, inp_str3, temp, out_str1, out_str2;
+		string inp_str1, inp_str2, inp_str3, temp, out_str1, out_str2, algorithm = "blosum62";
 		// разбираем 2 последовательности аминокислот
 		getline(input_file, inp_str1);
 		getline(input_file, inp_str2);
@@ -450,23 +450,56 @@ void homework5(ifstream &input_file, ofstream &output_file)
 		}
 		blosum_file.close();
 		// строим таблицы весов и направлений
-		build_dir_sc_tables(acids, blosum62, inp_str1, inp_str2, score_table, direction_table);
+		build_dir_sc_tables(acids, blosum62, inp_str1, inp_str2, algorithm, score_table, direction_table);
 		// делаем выравнивание обеих последовательностей
 		print_alignment(direction_table, inp_str1, inp_str2, inp_str1.size(), inp_str2.size(), out_str1, out_str2);
 		output_file << score_table[inp_str1.size()][inp_str2.size()] << endl << out_str1 << endl << out_str2;
-		for (int i = 0; i <= inp_str1.size(); i++)
-		{
-			for (int j = 0; j <= inp_str2.size(); j++)
-			{
-				cout << score_table[i][j] << " ";
-			}
-			cout << endl;
-		}
 	}
 	break;
 	case 2:
 	{
-
+		string inp_str1, inp_str2, inp_str3, temp, out_str1, out_str2, algorithm = "pam250";
+		// разбираем 2 последовательности аминокислот
+		getline(input_file, inp_str1);
+		getline(input_file, inp_str2);
+		// выделяем место под таблицы весов и направлений
+		vector<vector<int>> score_table(inp_str1.size() + 1, vector<int>(inp_str2.size() + 1));
+		vector<vector<char>> direction_table(inp_str1.size() + 1, vector<char>(inp_str2.size() + 1));
+		// разбираем таблицу PAM250
+		ifstream pam_file;
+		pam_file.open("pam250.txt");
+		// считываем последовательность аминокислот в таблице
+		vector<char> acids;
+		getline(pam_file, inp_str3);
+		for (int i = 0; i < inp_str3.size(); i++)
+		{
+			if (inp_str3[i] != ' ')
+			{
+				acids.push_back(inp_str3[i]);
+			}
+		}
+		// считываем саму таблицу
+		vector<vector<int>> pam250(acids.size() + 1, vector<int>(acids.size() + 1));
+		for (int i = 1; i <= acids.size(); i++)
+		{
+			getline(pam_file, inp_str3);
+			istringstream iss(inp_str3);
+			for (int j = 1; j <= acids.size(); j++)
+			{
+				getline(iss, temp, ' ');
+				while (temp == "")
+				{
+					getline(iss, temp, ' ');
+				}
+				pam250[i][j] = stoi(temp);
+			}
+		}
+		pam_file.close();
+		// строим таблицы весов и направлений
+		build_dir_sc_tables(acids, pam250, inp_str1, inp_str2, algorithm, score_table, direction_table);
+		// делаем выравнивание обеих последовательностей
+		print_alignment(direction_table, inp_str1, inp_str2, inp_str1.size(), inp_str2.size(), out_str1, out_str2);
+		output_file << score_table[inp_str1.size()][inp_str2.size()] << endl << out_str1 << endl << out_str2;
 	}
 	break;
 	default:
@@ -476,7 +509,7 @@ void homework5(ifstream &input_file, ofstream &output_file)
 	}
 }
 
-void build_dir_sc_tables(const vector<char> &acid, const vector<vector<int>> &substitution_matrix, string &v, string &w, vector<vector<int>> &score_table, vector<vector<char>> &direction_table)
+void build_dir_sc_tables(const vector<char> &acid, const vector<vector<int>> &substitution_matrix, const string &v, const string &w, const string &algorithm, vector<vector<int>> &score_table, vector<vector<char>> &direction_table)
 {
 	int n = v.size();
 	int m = w.size();
@@ -494,7 +527,22 @@ void build_dir_sc_tables(const vector<char> &acid, const vector<vector<int>> &su
 	{
 		for (int j = 1; j <= m; j++)
 		{
-			score_table[i][j] = max(max(score_table[i - 1][j] - 5, score_table[i][j - 1] - 5), score_table[i - 1][j - 1] + score(acid, substitution_matrix, v[i - 1], w[j - 1]));
+			if (algorithm == "blosum62")
+			{
+				score_table[i][j] = max
+				(
+					max(score_table[i - 1][j] - 5, score_table[i][j - 1] - 5), 
+					score_table[i - 1][j - 1] + score(acid, substitution_matrix, v[i - 1], w[j - 1])
+				);
+			}
+			else if (algorithm == "pam250")
+			{
+				score_table[i][j] = max
+				(
+					max(score_table[i - 1][j] - 5, score_table[i][j - 1] - 5), 
+					max(0, score_table[i - 1][j - 1] + score(acid, substitution_matrix, v[i - 1], w[j - 1]))
+				);
+			}
 			if (score_table[i][j] == score_table[i - 1][j] - 5)
 			{
 				direction_table[i][j] = '^';
