@@ -666,7 +666,30 @@ void homework6(ifstream &input_file, ofstream &output_file)
 	break;
 	case 3:
 	{
+		vector<string> inp_strs;
+		string tmp, prefix, suffix;
 
+		while (!input_file.eof())
+		{
+			getline(input_file, tmp);
+			inp_strs.push_back(tmp);
+		}
+		
+		map <string, string> graph;
+		std::map<string, string>::iterator it;
+		for (int i = 0; i < inp_strs.size(); i++)
+		{
+			prefix = inp_strs[i].substr(0, inp_strs[i].size() - 1);
+			suffix = inp_strs[i].substr(1, inp_strs[i].size() - 1);
+			it = graph.find(prefix);
+			if (it != graph.end())
+				it->second += ", " + suffix;
+			graph.insert(pair<string, string>(prefix, suffix));
+		}
+		for (auto it = graph.begin(); it != graph.end(); ++it)
+		{
+			output_file << (*it).first << " -> " << (*it).second << endl;
+		}
 	}
 	break;
 	default:
