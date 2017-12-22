@@ -635,7 +635,33 @@ void homework6(ifstream &input_file, ofstream &output_file)
 	break;
 	case 2:
 	{
+		vector<string> inp_strs;
+		string tmp, prefix, suffix;
 
+		while (!input_file.eof())
+		{
+			getline(input_file, tmp);
+			inp_strs.push_back(tmp);
+		}
+
+		for (int i = 0; i < inp_strs.size() - 1; i++)
+		{
+			for (int j = i + 1; j < inp_strs.size(); j++)
+			{
+				prefix = inp_strs[i].substr(0, inp_strs[i].size() - 1);
+				suffix = inp_strs[j].substr(1, inp_strs[j].size() - 1);
+				if (suffix == prefix)
+				{
+					output_file << inp_strs[j] << " -> " << inp_strs[i] << endl;
+				}
+				prefix = inp_strs[j].substr(0, inp_strs[i].size() - 1);
+				suffix = inp_strs[i].substr(1, inp_strs[j].size() - 1);
+				if (suffix == prefix)
+				{
+					output_file << inp_strs[i] << " -> " << inp_strs[j] << endl;
+				}
+			}
+		}
 	}
 	break;
 	case 3:
