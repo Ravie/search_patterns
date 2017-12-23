@@ -725,6 +725,18 @@ void homework7(ifstream &input_file, ofstream &output_file)
 		output_file << EulerCycle[EulerCycle.size() - 1];
 	}
 	break;
+	case 2:
+	{
+		vector<int> EulerPath;
+		findEulerPath(input_file, EulerPath);
+
+		for (int i = 0; i < EulerPath.size() - 1; i++)
+		{
+			output_file << EulerPath[i] << " -> ";
+		}
+		output_file << EulerPath[EulerPath.size() - 1];
+	}
+	break;
 	default:
 	{
 		cout << "Incorrect number";
@@ -737,7 +749,7 @@ void findEulerPath(ifstream &input_file, vector<int> &EulerPath)
 	multimap<int, int> edges_list;
 	string temp;
 	int out_vertex, in_vertex, vertex;
-
+	// разбираем файл
 	while (!input_file.eof())
 	{
 		getline(input_file, temp, ' ');
@@ -753,8 +765,31 @@ void findEulerPath(ifstream &input_file, vector<int> &EulerPath)
 		in_vertex = stoi(temp);
 		edges_list.insert(pair<int, int>(out_vertex, in_vertex));
 	}
-
-	auto edge = edges_list.begin();
+	// добавляем несуществующее ребро
+	vector<int> edges_degree_in(edges_list.size());
+	vector<int> edges_degree_out(edges_list.size());
+	for (auto it = edges_list.begin(); it != edges_list.end(); it++)
+	{
+		edges_degree_out[it->first]++;
+		edges_degree_in[it->second]++;
+	}
+	for (int i = 0; i < edges_list.size(); i++)
+	{
+		if ((edges_degree_out[i] + edges_degree_in[i]) % 2 == 1)
+		{
+			if (edges_degree_out[i] > edges_degree_in[i])
+			{
+				in_vertex = i;
+			}
+			else
+			{
+				out_vertex = i;
+			}
+		}
+	}
+	edges_list.insert(pair<int, int>(out_vertex, in_vertex));
+	// процесс поиска
+	auto edge = edges_list.find(out_vertex);
 	stack<int> st;
 	vertex = edge->first;
 	st.push(vertex);
@@ -776,4 +811,6 @@ void findEulerPath(ifstream &input_file, vector<int> &EulerPath)
 	}
 
 	reverse(EulerPath.begin(), EulerPath.end());
+	// убираем несуществующее ребро
+	EulerPath.erase(EulerPath.begin());
 }
