@@ -19,6 +19,8 @@ void build_dir_sc_tables(const vector<char> &, const vector<vector<int>> &, cons
 int score(const vector<char> &, const vector<vector<int>> &, const char, const char);
 void print_alignment(const vector<vector<char>> &, const string, const string, const int, const int, string &, string &);
 void homework6(ifstream &, ofstream &);
+void homework7(ifstream &, ofstream &);
+void findEulerPath(ifstream &, vector<int> &);
 
 int main()
 {
@@ -50,6 +52,11 @@ int main()
 	case 6:
 	{
 		homework6(input_file, output_file);
+	}
+	break;
+	case 7:
+	{
+		homework7(input_file, output_file);
 	}
 	break;
 	default:
@@ -697,4 +704,76 @@ void homework6(ifstream &input_file, ofstream &output_file)
 		cout << "Incorrect number";
 	}
 	}
+}
+
+void homework7(ifstream &input_file, ofstream &output_file)
+{
+	int tasknum;
+	cout << "Choose task number: ";
+	cin >> tasknum;
+	switch (tasknum)
+	{
+	case 1:
+	{
+		vector<int> EulerCycle;
+		findEulerPath(input_file, EulerCycle);
+		
+		for (int i = 0; i < EulerCycle.size() - 1; i++)
+		{
+			output_file << EulerCycle[i] << " -> ";
+		}
+		output_file << EulerCycle[EulerCycle.size() - 1];
+	}
+	break;
+	default:
+	{
+		cout << "Incorrect number";
+	}
+	}
+}
+
+void findEulerPath(ifstream &input_file, vector<int> &EulerPath)
+{
+	multimap<int, int> edges_list;
+	string temp;
+	int out_vertex, in_vertex, vertex;
+
+	while (!input_file.eof())
+	{
+		getline(input_file, temp, ' ');
+		out_vertex = stoi(temp);
+		getline(input_file, temp, ' ');
+		getline(input_file, temp);
+		while (temp.find(',', 0) != string::npos)
+		{
+			in_vertex = stoi(temp.substr(0, temp.find(',', 0)));
+			edges_list.insert(pair<int, int>(out_vertex, in_vertex));
+			temp = temp.substr(temp.find(',', 0) + 1, temp.length());
+		}
+		in_vertex = stoi(temp);
+		edges_list.insert(pair<int, int>(out_vertex, in_vertex));
+	}
+
+	auto edge = edges_list.begin();
+	stack<int> st;
+	vertex = edge->first;
+	st.push(vertex);
+	while (!st.empty())
+	{
+		vertex = st.top();
+		if (edges_list.find(vertex) == edges_list.end())
+		{
+			EulerPath.push_back(vertex);
+			st.pop();
+		}
+		else
+		{
+			edge = edges_list.find(vertex);
+			vertex = edge->second;
+			edges_list.erase(edge);
+			st.push(vertex);
+		}
+	}
+
+	reverse(EulerPath.begin(), EulerPath.end());
 }
