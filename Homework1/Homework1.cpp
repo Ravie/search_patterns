@@ -737,6 +737,59 @@ void homework7(ifstream &input_file, ofstream &output_file)
 		output_file << EulerPath[EulerPath.size() - 1];
 	}
 	break;
+	case 3:
+	{
+		vector<int> EulerPath;
+		string k_size, k_mer, prefix, suffix;
+		vector<string> k_mers;
+		vector<string> k_mers_ser;
+
+		int k;
+		getline(input_file, k_size);
+		k = stoi(k_size);
+
+		while (!input_file.eof())
+		{
+			getline(input_file, k_mer);
+			k_mers.push_back(k_mer);
+		}
+
+		ofstream serializable;
+		serializable.open("serializable.txt");
+		unordered_map<string, int> condition;
+		int id = 0;
+		for (int i = 0; i < k_mers.size(); i++)
+		{
+			prefix = k_mers[i].substr(0, k_mers[i].size() - 1);
+			condition.insert(pair<string, int>(prefix, ++id));
+			suffix = k_mers[i].substr(1, k_mers[i].size());
+			condition.insert(pair<string, int>(suffix, ++id));
+			serializable << condition.find(prefix)->second << " -> " << condition.find(suffix)->second << endl;
+		}
+
+		ifstream ser;
+		ser.open("serializable.txt");
+		findEulerPath(ser, EulerPath);
+
+		for (int i = 0; i < EulerPath.size(); i++)
+		{
+			for (auto it = condition.begin(); it != condition.end(); it++)
+			{
+				if (it->second == EulerPath[i])
+				{
+					output_file << it->first.substr(0, 1);
+				}
+			}
+		}
+		for (auto it = condition.begin(); it != condition.end(); it++)
+		{
+			if (it->second == EulerPath[EulerPath.size() - 1])
+			{
+				output_file << it->first.substr(1, it->first.size());
+			}
+		}
+	}
+	break;
 	default:
 	{
 		cout << "Incorrect number";
