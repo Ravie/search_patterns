@@ -682,8 +682,8 @@ void homework6(ifstream &input_file, ofstream &output_file)
 			inp_strs.push_back(tmp);
 		}
 		
-		map <string, string> graph;
-		std::map<string, string>::iterator it;
+		unordered_map <string, string> graph;
+		unordered_map <string, string>::iterator it;
 		for (int i = 0; i < inp_strs.size(); i++)
 		{
 			prefix = inp_strs[i].substr(0, inp_strs[i].size() - 1);
@@ -746,13 +746,15 @@ void homework7(ifstream &input_file, ofstream &output_file)
 
 void findEulerPath(ifstream &input_file, vector<int> &EulerPath)
 {
-	multimap<int, int> edges_list;
+	unordered_multimap<int, int> edges_list;
 	string temp;
-	int out_vertex, in_vertex, vertex;
+	int out_vertex, in_vertex, vertex, max = 0;
 	// разбираем файл
 	while (!input_file.eof())
 	{
 		getline(input_file, temp, ' ');
+		if (temp == "\0")
+			break;
 		out_vertex = stoi(temp);
 		getline(input_file, temp, ' ');
 		getline(input_file, temp);
@@ -761,19 +763,21 @@ void findEulerPath(ifstream &input_file, vector<int> &EulerPath)
 			in_vertex = stoi(temp.substr(0, temp.find(',', 0)));
 			edges_list.insert(pair<int, int>(out_vertex, in_vertex));
 			temp = temp.substr(temp.find(',', 0) + 1, temp.length());
+			max = (std::max(out_vertex, in_vertex) > max) ? std::max(out_vertex, in_vertex) : max;
 		}
 		in_vertex = stoi(temp);
 		edges_list.insert(pair<int, int>(out_vertex, in_vertex));
+		max = (std::max(out_vertex, in_vertex) > max) ? std::max(out_vertex, in_vertex) : max;
 	}
 	// добавляем несуществующее ребро
-	vector<int> edges_degree_in(edges_list.size());
-	vector<int> edges_degree_out(edges_list.size());
+	vector<int> edges_degree_in(max + 1);
+	vector<int> edges_degree_out(max + 1);
 	for (auto it = edges_list.begin(); it != edges_list.end(); it++)
 	{
 		edges_degree_out[it->first]++;
 		edges_degree_in[it->second]++;
 	}
-	for (int i = 0; i < edges_list.size(); i++)
+	for (int i = 0; i < edges_degree_out.size(); i++)
 	{
 		if ((edges_degree_out[i] + edges_degree_in[i]) % 2 == 1)
 		{
